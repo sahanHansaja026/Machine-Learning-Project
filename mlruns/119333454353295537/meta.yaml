@@ -1,0 +1,7 @@
+artifact_location: file:///home/hansaja/Machine-Learning-Project/mlruns/119333454353295537
+creation_time: 1772367021632
+experiment_id: '119333454353295537'
+last_update_time: 1772367021632
+lifecycle_stage: active
+name: Churn_Prediction
+workspace: default

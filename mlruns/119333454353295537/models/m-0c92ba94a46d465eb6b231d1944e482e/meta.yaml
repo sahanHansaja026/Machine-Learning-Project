@@ -1,0 +1,10 @@
+artifact_location: file:///home/hansaja/Machine-Learning-Project/mlruns/119333454353295537/models/m-0c92ba94a46d465eb6b231d1944e482e/artifacts
+creation_timestamp: 1772367021708
+experiment_id: '119333454353295537'
+last_updated_timestamp: 1772367023559
+model_id: m-0c92ba94a46d465eb6b231d1944e482e
+model_type: null
+name: model
+source_run_id: 69187b1ca66f489ea2b378d57e0e97e5
+status: 2
+status_message: null

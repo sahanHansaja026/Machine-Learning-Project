@@ -9,6 +9,15 @@ from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
+# ----------------- MLflow setup -----------------
+import os
+import mlflow
+
+# ----------------- Force local MLflow folder -----------------
+mlruns_path = os.path.join(os.getcwd(), "mlruns")  # always inside project
+mlflow.set_tracking_uri(f"file://{mlruns_path}")
+os.makedirs(mlruns_path, exist_ok=True)
+# -------------------------------------------------------------
 
 def load_data():
     X_train = pd.read_csv("data/processed/X_train.csv")
@@ -16,7 +25,6 @@ def load_data():
     y_train = pd.read_csv("data/processed/y_train.csv").values.ravel()
     y_test = pd.read_csv("data/processed/y_test.csv").values.ravel()
     return X_train, X_test, y_train, y_test
-
 
 def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
@@ -32,7 +40,6 @@ def evaluate_model(model, X_test, y_test):
 
     return metrics
 
-
 def train_and_log(model, model_name, X_train, X_test, y_train, y_test):
     with mlflow.start_run(run_name=model_name):
         model.fit(X_train, y_train)
@@ -46,7 +53,7 @@ def train_and_log(model, model_name, X_train, X_test, y_train, y_test):
         for key, value in metrics.items():
             mlflow.log_metric(key, value)
 
-        # Log model
+        # Log model (relative path, works cross-platform)
         mlflow.sklearn.log_model(model, "model")
 
         print(f"\n{model_name} Results:")
@@ -55,8 +62,8 @@ def train_and_log(model, model_name, X_train, X_test, y_train, y_test):
 
         return metrics
 
-
 def main():
+    # Set experiment (will create in mlruns folder)
     mlflow.set_experiment("Churn_Prediction")
 
     X_train, X_test, y_train, y_test = load_data()
@@ -77,12 +84,11 @@ def main():
             best_score = metrics["roc_auc"]
             best_model = model
 
-    # Save best model
+    # Save best model locally
     os.makedirs("models", exist_ok=True)
     joblib.dump(best_model, "models/best_model.pkl")
 
     print("\n✅ Best model saved successfully!")
-
 
 if __name__ == "__main__":
     main()

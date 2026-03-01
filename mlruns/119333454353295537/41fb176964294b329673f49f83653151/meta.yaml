@@ -1,0 +1,14 @@
+artifact_uri: file:///home/hansaja/Machine-Learning-Project/mlruns/119333454353295537/41fb176964294b329673f49f83653151/artifacts
+end_time: 1772367026003
+entry_point_name: ''
+experiment_id: '119333454353295537'
+lifecycle_stage: active
+run_id: 41fb176964294b329673f49f83653151
+run_name: Random_Forest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1772367023562
+status: 3
+tags: []
+user_id: hansaja
