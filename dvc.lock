@@ -1,0 +1,74 @@
+schema: '2.0'
+stages:
+  preprocessing:
+    cmd: python src/preprocessing.py
+    deps:
+    - path: data/raw/Churn Prediction DataSet.csv
+      hash: md5
+      md5: 0f9de68e012bd3aed5fa7cdc9fc421af
+      size: 977501
+    - path: src/preprocessing.py
+      hash: md5
+      md5: b20fcb8a09276fd068ac0482cbc35776
+      size: 1899
+    outs:
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: a0a3648b0a326bce8a03697b44193676
+      size: 295626
+    - path: data/processed/X_train.csv
+      hash: md5
+      md5: 822b7e80c4a7d3f25e11fc84156a5b24
+      size: 1179429
+    - path: data/processed/y_test.csv
+      hash: md5
+      md5: e958151f165f7f472b725188c9e97a20
+      size: 4234
+    - path: data/processed/y_train.csv
+      hash: md5
+      md5: f597c5156799e0428077438ebc926949
+      size: 16909
+  training:
+    cmd: python src/train.py
+    deps:
+    - path: data/processed/X_train.csv
+      hash: md5
+      md5: 822b7e80c4a7d3f25e11fc84156a5b24
+      size: 1179429
+    - path: data/processed/y_train.csv
+      hash: md5
+      md5: f597c5156799e0428077438ebc926949
+      size: 16909
+    - path: src/train.py
+      hash: md5
+      md5: c295203b81ed60d62f1e581e0c503651
+      size: 2599
+    outs:
+    - path: models/best_model.pkl
+      hash: md5
+      md5: f9cc419cef97719b1c2923dffd1d357e
+      size: 2079
+  evaluation:
+    cmd: python src/evaluate.py
+    deps:
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: a0a3648b0a326bce8a03697b44193676
+      size: 295626
+    - path: models/best_model.pkl
+      hash: md5
+      md5: f9cc419cef97719b1c2923dffd1d357e
+      size: 2079
+    - path: src/evaluate.py
+      hash: md5
+      md5: 49979998f35362a31d2190d6f276dc55
+      size: 1319
+    outs:
+    - path: confusion_matrix.png
+      hash: md5
+      md5: 071c444f53e30ecdc1d14f22aa08ff5f
+      size: 20259
+    - path: roc_curve.png
+      hash: md5
+      md5: a39bee0125c1dc33570269e66447328e
+      size: 14870

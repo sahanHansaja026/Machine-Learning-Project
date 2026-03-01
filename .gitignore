@@ -13,3 +13,5 @@ data/processed/*.csv
 # Ignore OS-specific files
 .DS_Store
 Thumbs.db
+/confusion_matrix.png
+/roc_curve.png
