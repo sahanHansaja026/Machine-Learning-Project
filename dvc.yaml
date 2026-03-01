@@ -1,0 +1,30 @@
+stages:
+  preprocessing:
+    cmd: python src/preprocessing.py
+    deps:
+      - src/preprocessing.py
+      - data/raw/Churn Prediction DataSet.csv
+    outs:
+      - data/processed/X_train.csv
+      - data/processed/X_test.csv
+      - data/processed/y_train.csv
+      - data/processed/y_test.csv
+
+  training:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+    outs:
+      - models/best_model.pkl
+
+  evaluation:
+    cmd: python src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - models/best_model.pkl
+      - data/processed/X_test.csv
+    outs:
+      - confusion_matrix.png
+      - roc_curve.png
