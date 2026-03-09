@@ -36,4 +36,4 @@ EXPOSE 8000
 # MLflow UI port
 EXPOSE 5000
 # Default command: run preprocessing, training, and evaluation
-CMD ["bash", "-c", "dvc repro && tail -f /dev/null"]
+CMD ["bash", "-c", "dvc repro && mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --host 0.0.0.0 --port 5000 & uvicorn src.main:app --host 0.0.0.0 --port 8000"]
