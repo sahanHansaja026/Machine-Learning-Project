@@ -9,16 +9,11 @@ from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
-# ----------------- MLflow setup -----------------
-import os
-import mlflow
+# ----------------- MLflow setup for DAGsHub -----------------
+mlflow.set_tracking_uri(os.getenv("https://dagshub.com/hansajasahan50/mlops-churn-prediction.mlflow"))       # DAGsHub MLflow URI
+mlflow.set_experiment("Churn_Prediction")                       # Experiment name
 
-# ----------------- Force local MLflow folder -----------------
-mlruns_path = os.path.join(os.getcwd(), "mlruns")  # always inside project
-mlflow.set_tracking_uri(f"file://{mlruns_path}")
-os.makedirs(mlruns_path, exist_ok=True)
-# -------------------------------------------------------------
-
+# ----------------- Data loading -----------------
 def load_data():
     X_train = pd.read_csv("data/processed/X_train.csv")
     X_test = pd.read_csv("data/processed/X_test.csv")
@@ -26,6 +21,7 @@ def load_data():
     y_test = pd.read_csv("data/processed/y_test.csv").values.ravel()
     return X_train, X_test, y_train, y_test
 
+# ----------------- Model evaluation -----------------
 def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1]
@@ -37,24 +33,24 @@ def evaluate_model(model, X_test, y_test):
         "f1_score": f1_score(y_test, y_pred),
         "roc_auc": roc_auc_score(y_test, y_prob),
     }
-
     return metrics
 
+# ----------------- Train and log -----------------
 def train_and_log(model, model_name, X_train, X_test, y_train, y_test):
     with mlflow.start_run(run_name=model_name):
         model.fit(X_train, y_train)
-
         metrics = evaluate_model(model, X_test, y_test)
 
-        # Log parameters (basic example)
+        # Log params and metrics
         mlflow.log_param("model_name", model_name)
-
-        # Log metrics
         for key, value in metrics.items():
             mlflow.log_metric(key, value)
 
-        # Log model (relative path, works cross-platform)
-        mlflow.sklearn.log_model(model, "model")
+        # Log model artifact
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            artifact_path="model"   # must be simple folder name
+        )
 
         print(f"\n{model_name} Results:")
         for key, value in metrics.items():
@@ -62,16 +58,14 @@ def train_and_log(model, model_name, X_train, X_test, y_train, y_test):
 
         return metrics
 
+# ----------------- Main -----------------
 def main():
-    # Set experiment (will create in mlruns folder)
-    mlflow.set_experiment("Churn_Prediction")
-
     X_train, X_test, y_train, y_test = load_data()
 
     models = {
         "Logistic_Regression": LogisticRegression(max_iter=1000),
         "Random_Forest": RandomForestClassifier(n_estimators=200, random_state=42),
-        "XGBoost": XGBClassifier(eval_metric="logloss")
+        "XGBoost": XGBClassifier(eval_metric="logloss", use_label_encoder=False)
     }
 
     best_model = None
@@ -79,16 +73,13 @@ def main():
 
     for name, model in models.items():
         metrics = train_and_log(model, name, X_train, X_test, y_train, y_test)
-
         if metrics["roc_auc"] > best_score:
             best_score = metrics["roc_auc"]
             best_model = model
 
-    # Save best model locally
-    os.makedirs("models", exist_ok=True)
+    # Save best model locally (optional)
     joblib.dump(best_model, "models/best_model.pkl")
-
-    print("\n✅ Best model saved successfully!")
+    print("\n✅ Best model saved successfully at models/best_model.pkl")
 
 if __name__ == "__main__":
     main()
