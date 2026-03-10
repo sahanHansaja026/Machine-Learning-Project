@@ -9,31 +9,45 @@ from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
-# ----------------- MLflow setup for DAGsHub -----------------
-mlflow.set_tracking_uri(os.getenv("https://dagshub.com/hansajasahan50/mlops-churn-prediction.mlflow"))       # DAGsHub MLflow URI
-mlflow.set_experiment("Churn_Prediction")                       # Experiment name
+# ----------------- Paths -----------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # path to src folder
+PROCESSED_DIR = os.path.join(BASE_DIR, "..", "data", "processed")
+MODEL_DIR = os.path.join(BASE_DIR, "..", "models")
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+# ----------------- MLflow setup -----------------
+mlflow.set_tracking_uri("https://dagshub.com/hansajasahan50/mlops-churn-prediction.mlflow")
+mlflow.set_experiment("Churn_Prediction")
 
 # ----------------- Data loading -----------------
 def load_data():
-    X_train = pd.read_csv("data/processed/X_train.csv")
-    X_test = pd.read_csv("data/processed/X_test.csv")
-    y_train = pd.read_csv("data/processed/y_train.csv").values.ravel()
-    y_test = pd.read_csv("data/processed/y_test.csv").values.ravel()
+    X_train_path = os.path.join(PROCESSED_DIR, "X_train.csv")
+    X_test_path = os.path.join(PROCESSED_DIR, "X_test.csv")
+    y_train_path = os.path.join(PROCESSED_DIR, "y_train.csv")
+    y_test_path = os.path.join(PROCESSED_DIR, "y_test.csv")
+
+    # Check existence
+    for path in [X_train_path, X_test_path, y_train_path, y_test_path]:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Required file not found: {path}")
+
+    X_train = pd.read_csv(X_train_path)
+    X_test = pd.read_csv(X_test_path)
+    y_train = pd.read_csv(y_train_path).values.ravel()
+    y_test = pd.read_csv(y_test_path).values.ravel()
     return X_train, X_test, y_train, y_test
 
 # ----------------- Model evaluation -----------------
 def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1]
-
-    metrics = {
+    return {
         "accuracy": accuracy_score(y_test, y_pred),
         "precision": precision_score(y_test, y_pred),
         "recall": recall_score(y_test, y_pred),
         "f1_score": f1_score(y_test, y_pred),
         "roc_auc": roc_auc_score(y_test, y_prob),
     }
-    return metrics
 
 # ----------------- Train and log -----------------
 def train_and_log(model, model_name, X_train, X_test, y_train, y_test):
@@ -47,10 +61,7 @@ def train_and_log(model, model_name, X_train, X_test, y_train, y_test):
             mlflow.log_metric(key, value)
 
         # Log model artifact
-        mlflow.sklearn.log_model(
-            sk_model=model,
-            artifact_path="model"   # must be simple folder name
-        )
+        mlflow.sklearn.log_model(sk_model=model, artifact_path="model")
 
         print(f"\n{model_name} Results:")
         for key, value in metrics.items():
@@ -60,6 +71,7 @@ def train_and_log(model, model_name, X_train, X_test, y_train, y_test):
 
 # ----------------- Main -----------------
 def main():
+    print("🚀 Loading preprocessed data...")
     X_train, X_test, y_train, y_test = load_data()
 
     models = {
@@ -77,9 +89,10 @@ def main():
             best_score = metrics["roc_auc"]
             best_model = model
 
-    # Save best model locally (optional)
-    joblib.dump(best_model, "models/best_model.pkl")
-    print("\n✅ Best model saved successfully at models/best_model.pkl")
+    # Save best model
+    best_model_path = os.path.join(MODEL_DIR, "best_model.pkl")
+    joblib.dump(best_model, best_model_path)
+    print(f"\n✅ Best model saved successfully at {best_model_path}")
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
-# Ignore Python virtual environment
+# Ignore Python virtual environments
 venv/
+airflow_venv/
 
 # Ignore Python cache files
 __pycache__/
@@ -7,11 +8,25 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Ignore pip cache, wheel files
+*.egg-info/
+*.egg
+*.whl
+
 # Ignore DVC output data (actual CSVs, large files)
 data/processed/*.csv
 
 # Ignore OS-specific files
 .DS_Store
 Thumbs.db
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore figures and plots
 /confusion_matrix.png
 /roc_curve.png
+
+# Ignore logs
+*.logvenv_old/
+airflow_venv/

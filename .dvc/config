@@ -1,0 +1,8 @@
+[core]
+    remote = dagshub
+['remote "origin-dvc"']
+    url = https://dagshub.com/hansajasahan50/mlops-churn-prediction.dvc
+['remote "dagshub"']
+    url = https://dagshub.com/hansajasahan50/mlops-churn-prediction.dvc
+    user = hansajasahan50
+    password = 2aa56548f2f691693f5c41477e910263f6087b3c
